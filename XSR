@@ -1,0 +1,628 @@
+--[[
+UI Lib Base Layout (Animated Gradient Boxes)
+- Draggable + Minimize + Exit
+- Home Page: Profile + Executor + Server Info + Connections + Game Info
+- Gradient colors:
+  * Profile: Red → Black
+  * Executor: Goldish Brown → Black
+  * Server Info: Blue → Black
+  * Connections: Yellow → Black
+  * Game Info: Purple → Black
+--]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "Cresent XSR"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 500, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 22, 32)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+local mainCorner = Instance.new("UICorner", mainFrame)
+mainCorner.CornerRadius = UDim.new(0, 12)
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(40, 35, 50)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+local titleCorner = Instance.new("UICorner", titleBar)
+titleCorner.CornerRadius = UDim.new(0, 12)
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 40, 0, 0) -- shifted to the right to make space for the logo
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Cresent XSR"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 24
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Logo (crescent) — small icon on the top-left of title bar
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.new(0, 28, 0, 28) -- small size
+logo.Position = UDim2.new(0, 8, 0.5, -14) -- left of title text
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://100654622343267"
+logo.Parent = titleBar
+
+-- Glow effect for logo
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 1.5
+uiStroke.Color = Color3.fromRGB(180, 120, 255) -- base purple
+uiStroke.Parent = logo
+
+-- Animate pulsing glow
+task.spawn(function()
+    while true do
+        local tweenIn = TweenService:Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Thickness = 3,
+            Color = Color3.fromRGB(220, 200, 255) -- brighter whitish purple
+        })
+        local tweenOut = TweenService:Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+            Thickness = 1.5,
+            Color = Color3.fromRGB(180, 120, 255) -- back to base purple
+        })
+        tweenIn:Play()
+        tweenIn.Completed:Wait()
+        tweenOut:Play()
+        tweenOut.Completed:Wait()
+        task.wait(0.2)
+    end
+end)
+
+-- Exit Button
+local exitButton = Instance.new("TextButton")
+exitButton.Size = UDim2.new(0, 36, 0, 28)
+exitButton.Position = UDim2.new(1, -40, 0.5, -14)
+exitButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+exitButton.Text = "X"
+exitButton.Font = Enum.Font.SourceSansBold
+exitButton.TextSize = 18
+exitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+exitButton.Parent = titleBar
+local exitCorner = Instance.new("UICorner", exitButton)
+exitCorner.CornerRadius = UDim.new(0, 6)
+
+-- Minimize Button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 36, 0, 28)
+minimizeButton.Position = UDim2.new(1, -80, 0.5, -14)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 140, 200)
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.SourceSansBold
+minimizeButton.TextSize = 22
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Parent = titleBar
+local minCorner = Instance.new("UICorner", minimizeButton)
+minCorner.CornerRadius = UDim.new(0, 6)
+
+-- Sidebar
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 120, 1, -40)
+sidebar.Position = UDim2.new(0, 0, 0, 40)
+sidebar.BackgroundColor3 = Color3.fromRGB(20, 18, 26)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = mainFrame
+local sideCorner = Instance.new("UICorner", sidebar)
+sideCorner.CornerRadius = UDim.new(0, 8)
+
+-- Layout for sidebar buttons
+local sideLayout = Instance.new("UIListLayout")
+sideLayout.Parent = sidebar
+sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
+sideLayout.Padding = UDim.new(0, 8)
+sideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+sideLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+-- Content Frame
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -120, 1, -40)
+content.Position = UDim2.new(0, 120, 0, 40)
+content.BackgroundColor3 = Color3.fromRGB(32, 28, 40)
+content.BorderSizePixel = 0
+content.Parent = mainFrame
+local contentCorner = Instance.new("UICorner", content)
+contentCorner.CornerRadius = UDim.new(0, 8)
+
+-- Pages storage
+local pages = {}
+
+local function showPage(name)
+    for pageName, frame in pairs(pages) do
+        frame.Visible = (pageName == name)
+    end
+end
+
+local function makeSideButton(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 55, 75)
+    btn.BorderSizePixel = 0
+    btn.Font = Enum.Font.SourceSansSemibold
+    btn.Text = name
+    btn.TextSize = 18
+    btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+    btn.Parent = sidebar
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 8)
+    
+    btn.MouseButton1Click:Connect(function()
+        showPage(name)
+    end)
+    
+    return btn
+end
+
+-- Utility: Gradient function
+local function applyGradient(frame, colors)
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new(colors)
+    grad.Rotation = 0
+    grad.Parent = frame
+
+    -- Animate gradient rotation
+    RunService.Heartbeat:Connect(function(dt)
+        grad.Rotation = (grad.Rotation + 20 * dt) % 360
+    end)
+end
+
+-- Home Page
+local homePage = Instance.new("Frame")
+homePage.Size = UDim2.new(1, 0, 1, 0)
+homePage.BackgroundTransparency = 1
+homePage.Visible = true
+homePage.Parent = content
+pages["Home"] = homePage
+
+-- Top Row
+local topRow = Instance.new("Frame")
+topRow.Size = UDim2.new(1, -40, 0, 80)
+topRow.Position = UDim2.new(0, 20, 0, 15)
+topRow.BackgroundTransparency = 1
+topRow.Parent = homePage
+
+-- Profile Box
+local profileBox = Instance.new("Frame")
+profileBox.Size = UDim2.new(0.7, -10, 1, 0)
+profileBox.Position = UDim2.new(0, 0, 0, 0)
+profileBox.Parent = topRow
+local profileCorner = Instance.new("UICorner", profileBox)
+profileCorner.CornerRadius = UDim.new(0, 12)
+applyGradient(profileBox, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), -- Red
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))   -- Black
+})
+
+-- Avatar
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Size = UDim2.new(0, 60, 0, 60)
+avatarImage.Position = UDim2.new(0, 10, 0.5, -30)
+avatarImage.BackgroundTransparency = 1
+local okThumb, thumb = pcall(function()
+    return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+end)
+if okThumb and thumb then avatarImage.Image = thumb end
+avatarImage.Parent = profileBox
+
+local welcomeLabel = Instance.new("TextLabel")
+welcomeLabel.Size = UDim2.new(1, -80, 1, -20)
+welcomeLabel.Position = UDim2.new(0, 80, 0, 10)
+welcomeLabel.BackgroundTransparency = 1
+welcomeLabel.Text = "Welcome,\n" .. player.Name
+welcomeLabel.Font = Enum.Font.SourceSansBold
+welcomeLabel.TextSize = 20
+welcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeLabel.TextXAlignment = Enum.TextXAlignment.Left
+welcomeLabel.TextYAlignment = Enum.TextYAlignment.Top
+welcomeLabel.Parent = profileBox
+
+-- Executor Box
+local executorBox = Instance.new("Frame")
+executorBox.Size = UDim2.new(0.3, -10, 1, 0)
+executorBox.Position = UDim2.new(0.7, 10, 0, 0)
+executorBox.Parent = topRow
+local executorCorner = Instance.new("UICorner", executorBox)
+executorCorner.CornerRadius = UDim.new(0, 12)
+applyGradient(executorBox, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(184, 134, 11)), -- Goldish Brown
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))       -- Black
+})
+
+local executorLabel = Instance.new("TextLabel")
+executorLabel.Size = UDim2.new(1, -10, 1, -10)
+executorLabel.Position = UDim2.new(0, 5, 0, 5)
+executorLabel.BackgroundTransparency = 1
+executorLabel.Text = "Woah!\nYour executor can run this."
+executorLabel.Font = Enum.Font.SourceSansBold
+executorLabel.TextSize = 16
+executorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+executorLabel.TextWrapped = true
+executorLabel.Parent = executorBox
+
+-- Second Row
+local secondRow = Instance.new("Frame")
+secondRow.Size = UDim2.new(1, -40, 0, 80)
+secondRow.Position = UDim2.new(0, 20, 0, 100)
+secondRow.BackgroundTransparency = 1
+secondRow.Parent = homePage
+
+-- Server Box
+local serverBox = Instance.new("Frame")
+serverBox.Size = UDim2.new(0.5, -10, 1, 0)
+serverBox.Position = UDim2.new(0, 0, 0, 0)
+serverBox.Parent = secondRow
+local serverCorner = Instance.new("UICorner", serverBox)
+serverCorner.CornerRadius = UDim.new(0, 12)
+applyGradient(serverBox, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 255)), -- Blue
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))   -- Black
+})
+
+local serverTitle = Instance.new("TextLabel")
+serverTitle.Size = UDim2.new(1, -20, 0, 25)
+serverTitle.Position = UDim2.new(0, 10, 0, 5)
+serverTitle.BackgroundTransparency = 1
+serverTitle.Text = "| Server Info |"
+serverTitle.Font = Enum.Font.SourceSansBold
+serverTitle.TextSize = 18
+serverTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+serverTitle.TextXAlignment = Enum.TextXAlignment.Left
+serverTitle.Parent = serverBox
+
+local playersLabel = Instance.new("TextLabel")
+playersLabel.Size = UDim2.new(1, -20, 0, 20)
+playersLabel.Position = UDim2.new(0, 10, 0, 35)
+playersLabel.BackgroundTransparency = 1
+playersLabel.Text = "Players in server: " .. tostring(#Players:GetPlayers())
+playersLabel.Font = Enum.Font.SourceSans
+playersLabel.TextSize = 16
+playersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+playersLabel.TextXAlignment = Enum.TextXAlignment.Left
+playersLabel.Parent = serverBox
+
+local latencyLabel = Instance.new("TextLabel")
+latencyLabel.Size = UDim2.new(1, -20, 0, 20)
+latencyLabel.Position = UDim2.new(0, 10, 0, 60)
+latencyLabel.BackgroundTransparency = 1
+latencyLabel.Text = "Latency: calculating..."
+latencyLabel.Font = Enum.Font.SourceSans
+latencyLabel.TextSize = 16
+latencyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+latencyLabel.TextXAlignment = Enum.TextXAlignment.Left
+latencyLabel.Parent = serverBox
+
+RunService.Heartbeat:Connect(function()
+    local ping = "N/A"
+    local ok, s = pcall(function()
+        return math.round(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+    end)
+    if ok and s then ping = s end
+    latencyLabel.Text = "Latency: " .. tostring(ping) .. " ms"
+end)
+
+-- Connections Box
+local connectionsBox = Instance.new("Frame")
+connectionsBox.Size = UDim2.new(0.5, -10, 1, 0)
+connectionsBox.Position = UDim2.new(0.5, 10, 0, 0)
+connectionsBox.Parent = secondRow
+local connectionsCorner = Instance.new("UICorner", connectionsBox)
+connectionsCorner.CornerRadius = UDim.new(0, 12)
+applyGradient(connectionsBox, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 0)), -- Yellow
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))     -- Black
+})
+
+local connectionsTitle = Instance.new("TextLabel")
+connectionsTitle.Size = UDim2.new(1, -20, 0, 25)
+connectionsTitle.Position = UDim2.new(0, 10, 0, 5)
+connectionsTitle.BackgroundTransparency = 1
+connectionsTitle.Text = "| Connections |"
+connectionsTitle.Font = Enum.Font.SourceSansBold
+connectionsTitle.TextSize = 18
+connectionsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+connectionsTitle.TextXAlignment = Enum.TextXAlignment.Left
+connectionsTitle.Parent = connectionsBox
+
+local friendsPlayingLabel = Instance.new("TextLabel")
+friendsPlayingLabel.Size = UDim2.new(1, -20, 0, 20)
+friendsPlayingLabel.Position = UDim2.new(0, 10, 0, 40)
+friendsPlayingLabel.BackgroundTransparency = 1
+friendsPlayingLabel.Text = "Friends playing: loading..."
+friendsPlayingLabel.Font = Enum.Font.SourceSans
+friendsPlayingLabel.TextSize = 16
+friendsPlayingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+friendsPlayingLabel.TextXAlignment = Enum.TextXAlignment.Left
+friendsPlayingLabel.Parent = connectionsBox
+
+-- Game Info
+local gameBox = Instance.new("Frame")
+gameBox.Size = UDim2.new(1, -40, 0, 70)
+gameBox.Position = UDim2.new(0, 20, 0, 190)
+gameBox.Parent = homePage
+local gameCorner = Instance.new("UICorner", gameBox)
+gameCorner.CornerRadius = UDim.new(0, 12)
+applyGradient(gameBox, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 0, 255)), -- Purple
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))     -- Black
+})
+
+local gameTitle = Instance.new("TextLabel")
+gameTitle.Size = UDim2.new(1, -20, 0, 25)
+gameTitle.Position = UDim2.new(0, 10, 0, 5)
+gameTitle.BackgroundTransparency = 1
+gameTitle.Text = "| Game Info |"
+gameTitle.Font = Enum.Font.SourceSansBold
+gameTitle.TextSize = 18
+gameTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+gameTitle.TextXAlignment = Enum.TextXAlignment.Left
+gameTitle.Parent = gameBox
+
+local gameNameLabel = Instance.new("TextLabel")
+gameNameLabel.Size = UDim2.new(1, -20, 0, 20)
+gameNameLabel.Position = UDim2.new(0, 10, 0, 40)
+gameNameLabel.BackgroundTransparency = 1
+gameNameLabel.Text = "Loading..."
+gameNameLabel.Font = Enum.Font.SourceSans
+gameNameLabel.TextSize = 16
+gameNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+gameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+gameNameLabel.Parent = gameBox
+
+task.spawn(function()
+    local ok, info = pcall(function()
+        return MarketplaceService:GetProductInfo(game.PlaceId)
+    end)
+    if ok and info then
+        gameNameLabel.Text = "Game: " .. info.Name
+    else
+        gameNameLabel.Text = "Game: N/A"
+    end
+end)
+
+-- ##########################
+-- ADDED: Game Pages (full, integrated)
+-- ##########################
+
+-- Pulse animation utility
+local function makePulse(frame)
+    task.spawn(function()
+        while frame.Parent do
+            local tweenIn = TweenService:Create(frame, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                BackgroundTransparency = 0.12
+            })
+            local tweenOut = TweenService:Create(frame, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+                BackgroundTransparency = 0.28
+            })
+            tweenIn:Play()
+            tweenIn.Completed:Wait()
+            tweenOut:Play()
+            tweenOut.Completed:Wait()
+        end
+    end)
+end
+
+-- Create game tab page function
+-- Violet/black animated header + gray script box with run button + Game Info
+local function createGamePage(key, title, violetColor, scriptName, description)
+    local page = Instance.new("Frame")
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.BackgroundTransparency = 1
+    page.Visible = false
+    page.Parent = content
+    pages[key] = page
+
+    -- Purple animated header
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(0.8, 0, 0, 40)
+    header.Position = UDim2.new(0.1, 0, 0, 10)
+    header.BackgroundTransparency = 0
+    header.Parent = page
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0, 12)
+
+    applyGradient(header, {
+        ColorSequenceKeypoint.new(0, violetColor),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    })
+
+    local headerStroke = Instance.new("UIStroke", header)
+    headerStroke.Thickness = 1.5
+    headerStroke.Color = Color3.fromRGB(
+        math.clamp(math.floor(violetColor.R * 255 * 0.8), 0, 255),
+        math.clamp(math.floor(violetColor.G * 255 * 0.8), 0, 255),
+        math.clamp(math.floor(violetColor.B * 255 * 0.8), 0, 255)
+    )
+
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Size = UDim2.new(1, -20, 1, -10)
+    headerLabel.Position = UDim2.new(0, 10, 0, 5)
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Text = title
+    headerLabel.Font = Enum.Font.SourceSansBold
+    headerLabel.TextSize = 22
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Center
+    headerLabel.Parent = header
+
+    makePulse(header)
+
+    -- Gray script box under header
+    local box = Instance.new("Frame")
+    box.Size = UDim2.new(0.8, 0, 0, 110)
+    box.Position = UDim2.new(0.1, 0, 0, 60)
+    box.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    box.Parent = page
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 12)
+
+    local stroke = Instance.new("UIStroke", box)
+    stroke.Thickness = 1.5
+    stroke.Color = Color3.fromRGB(80, 80, 80)
+
+    local scriptLabel = Instance.new("TextLabel")
+    scriptLabel.Size = UDim2.new(1, -20, 0, 25)
+    scriptLabel.Position = UDim2.new(0, 10, 0, 5)
+    scriptLabel.BackgroundTransparency = 1
+    scriptLabel.Text = scriptName
+    scriptLabel.Font = Enum.Font.SourceSansBold
+    scriptLabel.TextSize = 20
+    scriptLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    scriptLabel.TextXAlignment = Enum.TextXAlignment.Left
+    scriptLabel.Parent = box
+
+    local descLabel = Instance.new("TextLabel")
+    descLabel.Size = UDim2.new(1, -20, 0, 20)
+    descLabel.Position = UDim2.new(0, 10, 0, 35)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = description
+    descLabel.Font = Enum.Font.SourceSans
+    descLabel.TextSize = 16
+    descLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.Parent = box
+
+    local noteLabel = Instance.new("TextLabel")
+    noteLabel.Size = UDim2.new(1, -20, 0, 30)
+    noteLabel.Position = UDim2.new(0, 10, 0, 55)
+    noteLabel.BackgroundTransparency = 1
+    noteLabel.Text = "💡 After running the script, please wait 1–3 minutes for the GUI to load.\n⌛ Note: Loading may vary depending on your device."
+    noteLabel.Font = Enum.Font.SourceSansItalic
+    noteLabel.TextSize = 14
+    noteLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    noteLabel.TextXAlignment = Enum.TextXAlignment.Left
+    noteLabel.TextYAlignment = Enum.TextYAlignment.Top
+    noteLabel.TextWrapped = true
+    noteLabel.Parent = box
+
+    local runButton = Instance.new("TextButton")
+    runButton.Size = UDim2.new(0, 70, 0, 26)
+    runButton.Position = UDim2.new(1, -80, 1, -36)
+    runButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+    runButton.Text = "RUN"
+    runButton.Font = Enum.Font.SourceSansBold
+    runButton.TextSize = 18
+    runButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+    runButton.Parent = box
+    Instance.new("UICorner", runButton).CornerRadius = UDim.new(0, 6)
+
+    local runStroke = Instance.new("UIStroke", runButton)
+    runStroke.Thickness = 2
+    runStroke.Color = Color3.fromRGB(255, 255, 255)
+
+   runButton.MouseButton1Click:Connect(function()
+    local codeMap = {
+        GAG = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
+        SAB = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
+        PVB = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
+        MM2 = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
+        ADM = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()'
+    }
+    local code = codeMap[key]
+    if code then
+        pcall(function()
+            loadstring(code)()
+        end)
+    end
+end)
+
+    -- Game Info (purple gradient)
+    local gameBox = Instance.new("Frame")
+    gameBox.Size = UDim2.new(0.8, 0, 0, 70)
+    gameBox.Position = UDim2.new(0.1, 0, 0, 180)
+    gameBox.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+    gameBox.Parent = page
+    Instance.new("UICorner", gameBox).CornerRadius = UDim.new(0, 12)
+    applyGradient(gameBox, {
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 0, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    })
+
+    local gameTitle = Instance.new("TextLabel")
+    gameTitle.Size = UDim2.new(1, -20, 0, 25)
+    gameTitle.Position = UDim2.new(0, 10, 0, 5)
+    gameTitle.BackgroundTransparency = 1
+    gameTitle.Text = "| Game Info |"
+    gameTitle.Font = Enum.Font.SourceSansBold
+    gameTitle.TextSize = 18
+    gameTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    gameTitle.TextXAlignment = Enum.TextXAlignment.Left
+    gameTitle.Parent = gameBox
+
+    local gameNameLabel = Instance.new("TextLabel")
+    gameNameLabel.Size = UDim2.new(1, -20, 0, 20)
+    gameNameLabel.Position = UDim2.new(0, 10, 0, 40)
+    gameNameLabel.BackgroundTransparency = 1
+    gameNameLabel.Text = "Loading..."
+    gameNameLabel.Font = Enum.Font.SourceSans
+    gameNameLabel.TextSize = 16
+    gameNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    gameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    gameNameLabel.Parent = gameBox
+
+    task.spawn(function()
+        local ok, info = pcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId)
+        end)
+        if ok and info then
+            gameNameLabel.Text = "Game: " .. info.Name
+        else
+            gameNameLabel.Text = "Game: N/A"
+        end
+    end)
+end
+
+-- Create all game tab pages (each with unique violet shade header)
+createGamePage("GAG", "Grow A Garden", Color3.fromRGB(110, 0, 150), "Project G SXR", "Project SXR Lunar UI + More.")
+createGamePage("SAB", "Stl A Brainrot", Color3.fromRGB(90, 0, 140), "Project S SXR", "Project SXR Lunar UI + More.")
+createGamePage("PVB", "Plants Vs Brainrots", Color3.fromRGB(120, 0, 170), "Project Z SXR", "Project SXR Lunar UI + More.")
+createGamePage("MM2", "Murder Mystery 2", Color3.fromRGB(80, 0, 120), "Project M SXR", "Project SXR Lunar UI + More.")
+createGamePage("ADM", "Adopt Me", Color3.fromRGB(100, 0, 150), "Project A SXR", "Project SXR Lunar UI + More.")
+-- ##########################
+-- End added section
+-- ##########################
+
+-- Sidebar Buttons
+makeSideButton("Home")
+makeSideButton("GAG")
+makeSideButton("SAB")
+makeSideButton("PVB")
+makeSideButton("MM2")
+makeSideButton("ADM")
+
+-- Exit + Minimize
+exitButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+local minimized = false
+minimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        mainFrame.Size = UDim2.new(0, 500, 0, 40)
+        sidebar.Visible = false
+        content.Visible = false
+    else
+        mainFrame.Size = UDim2.new(0, 500, 0, 320)
+        sidebar.Visible = true
+        content.Visible = true
+    end
+end)
+
+-- Default page
+showPage("Home")
