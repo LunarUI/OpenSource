@@ -581,7 +581,7 @@ end)
         end)
         if ok and info then
             gameNameLabel.Text = "Game: " .. info.Name
-        else
+        Stl
             gameNameLabel.Text = "Game: N/A"
         end
     end)
@@ -589,7 +589,7 @@ end
 
 -- Create all game tab pages (each with unique violet shade header)
 createGamePage("GAG", "Grow A Garden", Color3.fromRGB(110, 0, 150), "Project G SXR", "Project SXR Lunar UI + More.")
-createGamePage("SAB", "Stl A Brainrot", Color3.fromRGB(90, 0, 140), "Project S SXR", "Project SXR Lunar UI + More.")
+createGamePage("SAB", "Steal A Brainrot", Color3.fromRGB(90, 0, 140), "Project S SXR", "Project SXR Lunar UI + More.")
 createGamePage("PVB", "Plants Vs Brainrots", Color3.fromRGB(120, 0, 170), "Project Z SXR", "Project SXR Lunar UI + More.")
 createGamePage("MM2", "Murder Mystery 2", Color3.fromRGB(80, 0, 120), "Project M SXR", "Project SXR Lunar UI + More.")
 createGamePage("ADM", "Adopt Me", Color3.fromRGB(100, 0, 150), "Project A SXR", "Project SXR Lunar UI + More.")
