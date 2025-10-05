@@ -528,9 +528,9 @@ local function createGamePage(key, title, violetColor, scriptName, description)
    runButton.MouseButton1Click:Connect(function()
     local codeMap = {
         GAG = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
-        SAB = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
-        PVB = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
-        MM2 = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()',
+        SAB = 'loadstring(game:HttpGet("https://gitlab.com/traxscriptss/traxscriptss/-/raw/main/visual2.lua"))()',
+        PVB = '',
+        MM2 = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Au0yX/Community/main/XhubMM2"))()',
         ADM = 'loadstring(game:HttpGet("http://109.71.240.235:3910/cdn/visual.luau"))()'
     }
     local code = codeMap[key]
